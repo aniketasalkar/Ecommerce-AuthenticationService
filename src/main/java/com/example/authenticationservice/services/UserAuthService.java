@@ -12,6 +12,7 @@ import com.example.authenticationservice.repositories.UserAuthRepository;
 import com.example.authenticationservice.utils.JwtUtils;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,19 +47,25 @@ public class UserAuthService implements IUserAuthService {
         if (authRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("User already exists");
         }
+        UserResponseDto userResponseDto = new UserResponseDto();
+        try {
+            userResponseDto = userManagementServiceClient.createUser(from(user));
+            Date now = new Date();
 
-        UserResponseDto userResponseDto = userManagementServiceClient.createUser(from(user));
-        Date now = new Date();
+            UserAuth userAuth = new UserAuth();
+            userAuth.setId(userResponseDto.getId());
+            userAuth.setEmail(user.getEmail());
+            userAuth.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+            userAuth.setCreatedAt(now);
+            userAuth.setUpdatedAt(now);
+            userAuth.setLastLogin(now);
 
-        UserAuth userAuth = new UserAuth();
-        userAuth.setId(userResponseDto.getId());
-        userAuth.setEmail(user.getEmail());
-        userAuth.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        userAuth.setCreatedAt(now);
-        userAuth.setUpdatedAt(now);
-        userAuth.setLastLogin(now);
-
-        authRepository.save(userAuth);
+            authRepository.save(userAuth);
+            userManagementServiceClient.sendWelcomeEmail(user.getEmail());
+        } catch (Exception e) {
+            userManagementServiceClient.deleteUser(user.getEmail());
+            userAuthRepository.deleteByEmail(user.getEmail());
+        }
 
         return to(userResponseDto);
     }

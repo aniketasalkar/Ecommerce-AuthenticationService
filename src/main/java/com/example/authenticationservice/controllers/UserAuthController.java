@@ -96,6 +96,21 @@ public class UserAuthController {
         }
     }
 
+    @PostMapping("/{email}/validateToken")
+    public ResponseEntity<Boolean> validateToken(@PathVariable String email, @RequestBody @Valid ValidateAndRefreshTokenRequestDto validateAndRefreshTokenRequestDto) {
+        try {
+            Pair<TokenState, String> tokenValidity = userAuthService.validateAndRefreshToken(email, validateAndRefreshTokenRequestDto);
+            Boolean isTokenValid = Boolean.FALSE;
+            if (tokenValidity.a.equals(TokenState.ACTIVE)) {
+                isTokenValid = Boolean.TRUE;
+            }
+
+            return new ResponseEntity<>(isTokenValid, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
+    }
+
 //    private void clearCookies(HttpServletResponse response) {
 //        Cookie cookie = new Cookie("access_token", null);
 //        cookie.setPath("/"); // Set the path to match the cookie path

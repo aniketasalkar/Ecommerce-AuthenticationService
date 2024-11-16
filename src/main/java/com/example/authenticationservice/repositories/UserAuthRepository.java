@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface UserAuthRepository extends JpaRepository<UserAuth, Long> {
     UserAuth save(UserAuth userAuth);
     Optional<UserAuth> findByEmail(String email);
+    void deleteByEmail(String email);
 }
