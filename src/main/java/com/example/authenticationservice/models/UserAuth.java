@@ -10,8 +10,9 @@ import java.util.Date;
 @Data
 @Entity
 public class UserAuth extends BaseModel{
-//    @Id
-//    private Long id;
+    private Long id;
+    private Date createdAt;
+    private Date updatedAt;
     private String email;
     private String password;
     private Date lastLogin;

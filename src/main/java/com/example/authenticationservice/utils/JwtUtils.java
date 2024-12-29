@@ -45,9 +45,9 @@ public class JwtUtils {
 
     public Boolean validateToken(String token_type, String token, UserResponseDto user) {
         Claims claims = getClaimsFromToken(token);
-        if (!claims.get("user_id").equals(user.getId())) {
-            throw new InvalidTokenException("Invalid token user_id");
-        }
+//        if (!claims.get("user_id").equals(user.getId())) {
+//            throw new InvalidTokenException("Invalid token user_id");
+//        }
         if (!claims.get("email").equals(user.getEmail())) {
             throw new InvalidTokenException("Invalid token email");
         }
@@ -65,12 +65,13 @@ public class JwtUtils {
     }
 
     public Claims getClaimsFromToken(String token) {
-        Claims claims;
+        Claims claims = null;
         try {
             JwtParser parser = Jwts.parser().verifyWith(secretKey).build();
             claims = parser.parseSignedClaims(token).getPayload();
         } catch (Exception exception) {
-            throw new InvalidTokenException("Invalid token Signature");
+//            throw new InvalidTokenException("Invalid token Signature");
+            System.out.println(exception.getMessage());
         }
 
         return claims;

@@ -10,15 +10,16 @@ import com.example.authenticationservice.models.UserAuth;
 import com.example.authenticationservice.repositories.SessionRepository;
 import com.example.authenticationservice.repositories.UserAuthRepository;
 import com.example.authenticationservice.utils.JwtUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
+@Slf4j
 @Service
 public class UserAuthService implements IUserAuthService {
 
@@ -114,11 +115,17 @@ public class UserAuthService implements IUserAuthService {
 
         UserResponseDto userDetails = userManagementServiceClient.getUser(email);
 
+        log.info("Passed Access Token: {}", validateAndRefreshTokenRequestDto.getAccessToken().toString());
+        log.info("Passed Refresh Token: {}", validateAndRefreshTokenRequestDto.getRefreshToken().toString());
+
         Session session = sessionRepository.findSessionByRefreshTokenAndAccessTokenAndSessionState(
                 validateAndRefreshTokenRequestDto.getRefreshToken(),
                 validateAndRefreshTokenRequestDto.getAccessToken(),
                 SessionState.ACTIVE
                 ).orElseThrow(() -> new InvalidTokenException("Invalid token"));
+
+        log.info("Stored Access Token: {}", session.getAccessToken());
+        log.info("Stored Refresh Token: {}", session.getRefreshToken());
 
         if (jwtUtils.validateToken("RefreshToken", session.getRefreshToken(), userDetails)) {
             if (!jwtUtils.validateToken("AccessToken", session.getAccessToken(), userDetails)) {
