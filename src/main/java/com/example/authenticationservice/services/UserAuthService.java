@@ -64,6 +64,8 @@ public class UserAuthService implements IUserAuthService {
             authRepository.save(userAuth);
             userManagementServiceClient.sendWelcomeEmail(user.getEmail());
         } catch (Exception e) {
+            log.error(e.getMessage());
+            log.info("deleting user");
             userManagementServiceClient.deleteUser(user.getEmail());
             userAuthRepository.deleteByEmail(user.getEmail());
         }
